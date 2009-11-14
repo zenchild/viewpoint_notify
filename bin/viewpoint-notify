@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #############################################################################
 # Copyright © 2009 Dan Wanek <dan.wanek@gmail.com>
 #
@@ -17,29 +18,12 @@
 # You should have received a copy of the GNU General Public License along
 # with Viewpoint Notify.  If not, see <http://www.gnu.org/licenses/>.
 #############################################################################
-require 'gtk2'
+$: << File.dirname(__FILE__) + '/../lib'
+require 'viewpoint_notify'
 
-class ViewpointNotify::StatusIcon
-
-	attr_reader :icon
-	def initialize
-		@icon = Gtk::StatusIcon.new
-		pic = Gdk::Pixbuf.new(File.dirname(__FILE__) + "/../../icons/lighthouse.png", 32, 32)
-		@icon.pixbuf = pic
-		@icon.tooltip = 'Viewpoint Message Notifier'
-	end
-
-	def start
-		trap("INT", proc { Thread.current.kill } )
-		begin
-			Gtk.main
-		ensure
-			Gtk.main_quit
-		end
-	end
-
-	def stop
-		# Run clean-up tasks
-	end
-
+begin
+	vpn = ViewpointNotify::Daemon.new
+	vpn.start
+ensure
+	vpn.shutdown
 end

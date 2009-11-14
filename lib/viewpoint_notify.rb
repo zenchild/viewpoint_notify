@@ -28,11 +28,3 @@ require 'viewpoint_notify/status_icon'
 require 'viewpoint_notify/notifier'
 require 'viewpoint_notify/folder_watcher'
 require 'viewpoint_notify/viewpoint_notify'
-
-
-begin
-	vpn = ViewpointNotify::Daemon.new
-	vpn.start
-ensure
-	vpn.shutdown
-end

@@ -24,8 +24,12 @@ class ViewpointNotify::FolderWatcher
 
 	@@default_folder = "Calendar"
 
-	def initialize
+	def initialize(notifier)
+		@notifier = notifier
 		@folders = []
+		@vp = Viewpoint::ExchWebServ.instance
+		@vp.authenticate
+		@vp.find_folders
 	end
 
 	def start
@@ -44,11 +48,15 @@ class ViewpointNotify::FolderWatcher
 	# time in seconds between polling for updates.
 	def watcher(polling_time=60)
 		run = true
+		load_folders
 		trap("INT", proc { Thread.current.kill } )
 		begin
 			while run
-				load_folders
 				@folders.each do |fold|
+					resp = fold.check_subscription
+					if( resp.first.notification.newMailEvent != nil )
+						@notifier.send_message("New Message", "New Message")
+					end
 				end
 				sleep polling_time
 			end
@@ -62,9 +70,15 @@ class ViewpointNotify::FolderWatcher
 		props = SOAP::Property.load(File.new("#{ENV['HOME']}/.viewpointrc"))
 		folders = props['vpnotify.folders']
 		if( folders.nil? )
-			@folders = [ @@default_folder ]
+			@folders = [ vp.get_folder(@@default_folder) ]
 		else
-			@folders = folders.split(/\s*,\s*/)
+			folders.split(/\s*,\s*/).each do |fold|
+				@folders << vp.get_folder(fold)
+			end
+		end
+
+		@folders.each do |fold|
+			fold.subscribe
 		end
 	end
 end
