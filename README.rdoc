@@ -16,11 +16,11 @@ Viewpoint Notify is an Exchange Web Services client using the Viewpoint library,
 
 == REQUIREMENTS:
 
- * viewpoint
- * daemontor
- * ruby-libnotify
- * gtk2
- * launchy
+* viewpoint
+* daemontor
+* ruby-libnotify
+* gtk2
+* launchy
 
 == INSTALL:
 
