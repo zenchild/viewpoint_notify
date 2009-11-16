@@ -29,7 +29,6 @@ class ViewpointNotify::Daemon
 		t1 = Thread.new { @status_icon.start }
 		@threads.add(t1)
 		@notifier = Notifier.new(@status_icon.icon)
-		@notifier.send_message("test","<a href='http://www.google.com'>Google</a>")
 		@watcher = FolderWatcher.new(@notifier)
 		t2 = Thread.new { @watcher.start }
 		@threads.add(t2)

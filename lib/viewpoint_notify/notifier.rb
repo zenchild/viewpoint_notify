@@ -28,6 +28,7 @@ class ViewpointNotify::Notifier
 	@@notice_category = "email"
 
 	def initialize(status_icon = nil)
+		#Thread.new {Gtk.main }
 		Notify.init( "Notifier" )
 		@status_icon = status_icon
 	end
@@ -39,14 +40,15 @@ class ViewpointNotify::Notifier
 
 			notice.add_action("Open in OWA","Open in OWA", aproc) do |name, data|
 				data.call
-				Gtk.main_iteration
+		#		Gtk.main
+		#		Gtk.main_quit
 			end
 
-			lproc = get_light_proc(message)
-			notice.add_action("Open","Open", lproc) do |name, data|
-				data.call
-				Gtk.main_iteration
-			end
+			#lproc = get_light_proc(message)
+			#notice.add_action("Open","Open", lproc) do |name, data|
+			#	data.call
+		#		Gtk.main_iteration
+			#end
 		end
 		notice.category = @@notice_category
 		notice.timeout = 4000
@@ -62,7 +64,8 @@ class ViewpointNotify::Notifier
 
 	# Parses the link out of the message
 	def parse_link(message)
-		message.sub(/^.*<a href=.([^>]+).>.*$/m,'\1')
+		link = message.sub(/^.*<a href=.([^>]+).>.*$/m,'\1')
+    #link.gsub!(/&/, '&amp;')
 	end
 
 	# Create a Proc that opens the message in OWA
@@ -81,16 +84,20 @@ class ViewpointNotify::Notifier
 			textb.text = message
 			text = Gtk::TextView.new(textb)
 			text.editable = false
+			text.left_margin = 10
+			text.right_margin = 10
 			#win.signal_connect( "destroy" ) { Gtk.main_quit }
 			hints = Gdk::Geometry.new
 			hints.base_width  = 800
 			hints.base_height = 600
 			hints.max_width = 1024
-			hints.max_height = 960
+			hints.max_height = 800
 			win.set_geometry_hints(win, hints, Gdk::Window::HINT_MAX_SIZE |
 														 Gdk::Window::HINT_BASE_SIZE )
-			win.set_default_size(800,600)
 			swin.add(text)
+			# Size the top window to the TextView not the ScrollWindow
+			tsize = text.size_request
+			win.set_default_size(tsize[0] + 20, tsize[1] + 20)
 			win.add(swin)
 			win.show_all
 		}
@@ -98,6 +105,7 @@ class ViewpointNotify::Notifier
 
 	def uninit
 		Notify.uninit
+		#Gtk.main_quit
 	end
 
 end

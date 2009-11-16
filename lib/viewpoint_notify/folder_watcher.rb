@@ -54,8 +54,13 @@ class ViewpointNotify::FolderWatcher
 			while run
 				@folders.each do |fold|
 					resp = fold.check_subscription
-					if( resp.first.notification.newMailEvent != nil )
-						@notifier.send_message("New Message", "New Message")
+          if(resp.key?(:newMailEvent) )
+            resp[:newMailEvent].each do |ev|
+              msg = fold.get_message(ev[:item_id]) if ev.key?(:item_id)
+              msg_summary = msg.subject +
+                "<a href='https://hostname/owa/?ae=Item&a=open&id=#{msg.owa_id}'>OWA Link</a>"
+              @notifier.send_message(msg.sender, msg_summary)
+            end
 					end
 				end
 				sleep polling_time
@@ -70,10 +75,10 @@ class ViewpointNotify::FolderWatcher
 		props = SOAP::Property.load(File.new("#{ENV['HOME']}/.viewpointrc"))
 		folders = props['vpnotify.folders']
 		if( folders.nil? )
-			@folders = [ vp.get_folder(@@default_folder) ]
+			@folders = [ @vp.get_folder(@@default_folder) ]
 		else
 			folders.split(/\s*,\s*/).each do |fold|
-				@folders << vp.get_folder(fold)
+				@folders << @vp.get_folder(fold)
 			end
 		end
 
