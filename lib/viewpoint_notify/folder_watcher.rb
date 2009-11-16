@@ -54,12 +54,25 @@ class ViewpointNotify::FolderWatcher
 			while run
 				@folders.each do |fold|
 					resp = fold.check_subscription
-          if(resp.key?(:newMailEvent) )
-            resp[:newMailEvent].each do |ev|
-              msg = fold.get_message(ev[:item_id]) if ev.key?(:item_id)
-              msg_summary = msg.subject +
-                "<a href='https://hostname/owa/?ae=Item&a=open&id=#{msg.owa_id}'>OWA Link</a>"
-              @notifier.send_message(msg.sender, msg_summary)
+          if( fold.instance_of?(Viewpoint::CalendarFolder) )
+            if(resp.key?(:createdEvent) )
+              resp[:createdEvent].each do |ev|
+                msg = fold.get_event(ev[:item_id]) if ev.key?(:item_id)
+                next if msg.nil?
+                msg_summary = msg.subject +
+                  "<a href='https://webmail.state.nd.us/owa/?ae=Item&a=open&t=#{msg.item_class}&id=#{msg.owa_id}'>OWA Link</a>"
+                @notifier.send_message(msg.sender, msg_summary)
+              end
+            end
+          else
+            if(resp.key?(:newMailEvent) )
+              resp[:newMailEvent].each do |ev|
+                msg = fold.get_message(ev[:item_id]) if ev.key?(:item_id)
+                next if msg.nil?
+                msg_summary = msg.subject +
+                  "<a href='https://webmail.state.nd.us/owa/?ae=Item&a=open&t=#{msg.item_class}&id=#{msg.owa_id}'>OWA Link</a>"
+                @notifier.send_message(msg.sender, msg_summary)
+              end
             end
 					end
 				end

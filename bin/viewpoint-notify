@@ -25,5 +25,5 @@ begin
 	vpn = ViewpointNotify::Daemon.new
 	vpn.start
 ensure
-	vpn.shutdown
+	vpn.shutdown unless vpn.nil?
 end
